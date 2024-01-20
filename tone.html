@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Tone Generator</title>
+
+<script>
+
+var context = null;
+var usingWebAudio = true;
+if (typeof AudioContext !== 'undefined') {
+  context = new AudioContext();
+} else if (typeof webkitAudioContext !== 'undefined') {
+  context = new webkitAudioContext();
+} else {
+  usingWebAudio = false;
+}
+
+var playing = false;
+var osc = null;
+var freq = 440;
+var STEP_CONSTANT = Math.pow(2.0, 1.0/12.0);
+
+function toggle() {
+  var button = document.getElementById("toggle");
+  if (playing && osc) {
+    playing = false;
+    osc.stop(0);
+    button.value = "Play";
+  } else {
+    playing = true;
+    osc = context.createOscillator();
+    osc.connect(context.destination);
+    osc.frequency.value = freq;
+    osc.start(0);
+    button.value = "Stop";
+  }
+}
+
+function updateFreq(newFreq) {
+  freq = newFreq;
+  if (osc) {
+    osc.frequency.value = freq;
+  }
+  var text = document.getElementById("freqText").value = freq;
+  var range = document.getElementById("freqRange").value = freq;
+}
+
+window.onload = function() {
+  if (!usingWebAudio) {
+    document.getElementById("audioControls").innerHTML = "<p>Web audio required.</p>"
+  }
+}
+
+</script>
+<style>
+  .slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; 
+  height: 25px; 
+  background: #d3d3d3;
+  outline: none; 
+  opacity: 0.7;
+  -webkit-transition: .2s; 
+  transition: opacity .2s;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; 
+  appearance: none;
+  width: 25px; 
+  height: 25px; 
+  background: #000;
+  cursor: pointer;
+}
+
+</style>
+</head>
+
+<body style="text-align:center">
+  <h1 style="text-align:center">Tone Generator</h1>
+  <div id="audioControls">
+    <input id="freqText" type="text" value="440" onchange="updateFreq(this.value)"/>
+    <input type="button" value="-1 half-step" onclick="updateFreq(freq / STEP_CONSTANT)"/>
+    <input type="button" value="+1 half-step" onclick="updateFreq(freq * STEP_CONSTANT)"/>
+    <input type="button" value="x1/2" onclick="updateFreq(freq / 2)"/>
+    <input type="button" value="x2" onclick="updateFreq(freq * 2)"/>
+    <br>
+    <input type="button" value="Sine" onclick="osc.type = 'sine'"/>
+    <input type="button" value="Square" onclick="osc.type = 'square'"/>
+    <input type="button" value="Sawtooth" onclick="osc.type = 'sawtooth'"/>
+    <input type="button" value="Triangle" onclick="osc.type = 'triangle'"/>
+    <br>
+
+    <input id="freqRange" type="range" style="width:1000px;" class="slider" min="0" max="20154" value="440" oninput="updateFreq(this.value)"/>
+    <br>
+
+    <input id="toggle" type="button" value="Play" onclick="toggle()"/>
+  </div>
+  <a href="https://gist.github.com/horndude77/11361875">Original by horndude77</a>
+</body>
+</html>
